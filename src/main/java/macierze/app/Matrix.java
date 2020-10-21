@@ -1,5 +1,6 @@
 package macierze.app;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -31,24 +32,31 @@ public class Matrix
    {
       Random rndGen = new Random();
 
-      Stream<ArrayList<Integer>> dataStream = Stream.generate( () -> {
-         return Stream.generate( () -> ( rndGen.nextInt(range) ) )
-                      .limit(numCol)
-                      .collect( Collectors.toCollection(ArrayList::new) );
-      }); 
+      ArrayList<ArrayList<Integer>> dataFromStream = 
+         Stream.generate( () -> {
+               return Stream.generate( () -> rndGen.nextInt(range) )
+                         .limit(numCol)
+                         .collect( Collectors.toCollection(ArrayList::new) );
+            })
+            .limit(numRow)
+            .collect( Collectors.toCollection(ArrayList::new) ); 
 
-      data = dataStream.limit(numRow)
-                       .collect(Collectors.toCollection(ArrayList::new) );
+      data = dataFromStream;
    }
 
    /**
-    * Class constructor from 2d array.
+    * Class constructor from 2d array (aka from raw data).
     *
-    * @param   arr2d 2d array from which matrix will be initialized 
+    * @param   rawData 2d array (int[][]) from which matrix will be initialized 
     */
-   public Matrix(int[][] arr2d)
+   public Matrix(int[][] rawData)
    {
+      Stream<Stream<Integer>> rawDataStream = 
+         Arrays.stream(rawData)
+               .map(x -> Arrays.stream(x).boxed());
 
+      data = rawDataStream.map(x -> x.collect( Collectors.toCollection(ArrayList::new) ) )
+                          .collect( Collectors.toCollection(ArrayList::new) );
    }
 
    /**
@@ -61,7 +69,7 @@ public class Matrix
    /**
     * Returns the raw data of the matrix.
     * 
-    * @return  raw  raw 2d array of data from the matrix
+    * @return  raw  raw 2d array(int[][]) of data from the matrix
     */
    public int[][] rawData()
    {
