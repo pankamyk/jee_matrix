@@ -53,7 +53,8 @@ public class Matrix
    {
       Stream<Stream<Integer>> rawDataStream = 
          Arrays.stream(rawData)
-               .map(x -> Arrays.stream(x).boxed());
+               .map(x -> Arrays.stream(x)
+                               .boxed());
 
       data = rawDataStream.map(x -> x.collect( Collectors.toCollection(ArrayList::new) ) )
                           .collect( Collectors.toCollection(ArrayList::new) );
@@ -73,7 +74,11 @@ public class Matrix
     */
    public int[][] rawData()
    {
-      int[][] raw = new int[1][1];
+      int[][] raw = data.stream()
+                        .map(x -> x.stream()
+                                   .mapToInt(i -> i)
+                                   .toArray())
+                        .toArray(int[][]::new);
 
       return raw;
    }
