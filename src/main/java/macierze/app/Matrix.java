@@ -110,7 +110,59 @@ public class Matrix
 
       return raw;
    }
-   
+
+    /**
+    * Method for adding two compatible matrices. Doesn't mutate the current object.
+    * 
+    * @param   otherMatrix    operand to be added to of type Matrix.
+    * @return  returnMatrix   effect of addition of type Matrix.
+    */
+   public Matrix add(Matrix otherMatrix)
+   {
+      int[][] operandData = otherMatrix.rawData();
+      int[][] thisData    = rawData();
+
+      int[][] returnData = 
+         IntStream.range(0, thisData.length)
+                  .parallel()
+                  .mapToObj(row -> IntStream.range(0, thisData[row].length)
+                     .map(column -> thisData[row][column] + operandData[row][column]).toArray())
+                  .toArray(int[][]::new);
+
+      /*
+         Arrays.stream(thisData)
+               .parallel()
+               .map(thisRow -> IntStream.range(0, operandData[0].length)
+                  .map(i -> thisRow[i] + operandData[i][])
+                  .toArray()
+               )
+               .toArray(int[][]::new);
+      */
+
+      return new Matrix(returnData);
+   } 
+
+   /**
+    * Method for subtracting two compatible matrices. Doesn't mutate the current object.
+    * 
+    * @param   otherMatrix    operand to be subtracted from of type Matrix.
+    * @return  returnMatrix   effect of subtraction of type Matrix.
+    */
+   public Matrix subtract(Matrix otherMatrix)
+   {
+      int[][] operandData = otherMatrix.rawData();
+      int[][] thisData    = rawData();
+
+      int[][] returnData = 
+         IntStream.range(0, thisData.length)
+                  .parallel()
+                  .mapToObj(row -> IntStream.range(0, thisData[row].length)
+                     .map(column -> thisData[row][column] - operandData[row][column]).toArray())
+                  .toArray(int[][]::new);
+
+      return new Matrix(returnData);
+   } 
+
    /**
     * Method for multiplying two compatible matrices. Doesn't mutate the current object.
     * 
@@ -127,7 +179,7 @@ public class Matrix
                .parallel()
                .map(thisRow -> IntStream.range(0, operandData[0].length)
                   .map(i -> IntStream.range(0, operandData.length)
-                     .map(j -> thisRow[j] * operandData[i][j])
+                     .map(j -> thisRow[j] * operandData[j][i])
                      .sum()
                   )
                   .toArray()
