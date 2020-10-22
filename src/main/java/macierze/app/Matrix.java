@@ -4,9 +4,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.Collectors;
+import java.util.stream.*;
 
 /**
  * Sample 2d matrix class
@@ -53,11 +51,16 @@ public class Matrix
    {
       Stream<Stream<Integer>> rawDataStream = 
          Arrays.stream(rawData)
-               .map(x -> Arrays.stream(x)
-                               .boxed());
+               .map(x -> {
+                  return Arrays.stream(x)
+                               .boxed();
+               });
 
-      data = rawDataStream.map(x -> x.collect( Collectors.toCollection(ArrayList::new) ) )
-                          .collect( Collectors.toCollection(ArrayList::new) );
+      data = rawDataStream
+               .map(x -> {
+                  return x.collect( Collectors.toCollection(ArrayList::new) );
+               })
+               .collect( Collectors.toCollection(ArrayList::new) );
    }
 
    /**
@@ -65,8 +68,31 @@ public class Matrix
     * Mainly for tests.
     *
     */
-   public Matrix(){}
+   public Matrix()
+   {
+      this(new int[][] { {0} });
+   }
    
+   /**
+    * Returns number of rows in the matrix.
+    * 
+    * @return rows number of rows (sizeX)
+    */
+   public int rows()
+   {
+      return data.size();
+   }
+   
+   /**
+    * Returns number of columns in the matrix.
+    *
+    * @return rows number of rows (sizeX)
+    */
+   public int colums()
+   {
+      return data.get(0).size();
+   }
+
    /**
     * Returns the raw data of the matrix.
     * 
@@ -75,12 +101,40 @@ public class Matrix
    public int[][] rawData()
    {
       int[][] raw = data.stream()
-                        .map(x -> x.stream()
+                        .map(x -> {
+                           return x.stream()
                                    .mapToInt(i -> i)
-                                   .toArray())
+                                   .toArray();
+                        })
                         .toArray(int[][]::new);
 
       return raw;
+   }
+   
+   /**
+    * Method for multiplying two compatible matrices. Doesn't mutate the current object.
+    * 
+    * @param   otherMatrix    operand to be multiplied by of type Matrix.
+    * @return  returnMatrix   effect of multiplication of type Matrix.
+    */
+   public Matrix multiply(Matrix otherMatrix)
+   {
+      int[][] operandData = otherMatrix.rawData();
+      int[][] thisData    = rawData();
+
+      int[][] returnData = 
+         Arrays.stream(thisData)
+               .parallel()
+               .map(thisRow -> IntStream.range(0, operandData[0].length)
+                  .map(i -> IntStream.range(0, operandData.length)
+                     .map(j -> thisRow[j] * operandData[i][j])
+                     .sum()
+                  )
+                  .toArray()
+               )
+               .toArray(int[][]::new);
+
+      return new Matrix(returnData);
    }
 
    /**
